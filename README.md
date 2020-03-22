@@ -24,3 +24,15 @@ Examples are using the asyncio REPL.
 >>> await sc.detentions()
 [<Detention ...>, <Detention ...>]
 ```
+
+## Requirements
+
+- `aiohttp`
+- `beautifulsoup4`
+- `lxml`
+
+## Install
+
+```sh
+$ python -m pip install -U classcharts.py
+```
