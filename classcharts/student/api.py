@@ -177,6 +177,7 @@ class StudentClient:
         }
 
         data = await self._request('POST', 'apiv2student/timetable/{}'.format(self.id), params=params, headers=headers)
+
         return Timetable(data)
 
     async def attendance(self, *, after: datetime = None, before: datetime = None):

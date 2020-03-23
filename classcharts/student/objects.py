@@ -202,4 +202,4 @@ class Attendance:
         self.end = datetime.fromisoformat(data["meta"]["end_date"])
 
     def __repr__(self):
-        return "<Attendance percentage={!r}>".format(self.percentage, self.days)
+        return "<Attendance percentage={!r}>".format(self.percentage)
