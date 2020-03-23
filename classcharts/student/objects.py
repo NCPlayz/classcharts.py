@@ -148,7 +148,7 @@ class Detention:
         return '<Detention id={!r} attended={!r} date={!r} length={!r} lesson={!r} teacher={!r} detention_type={!r}>'.format(self.id, self.attended, self.date, self.length, self.lesson, self.teacher, self.detention_type)
 
 
-class Lession(BasicLesson):
+class Lesson(BasicLesson):
     def __init__(self, data):
         super().__init__({"name": data["lesson_name"], "subject": {"name": data["subject_name"]}})
         title, first_name, last_name = data["teacher_name"].split(" ")
@@ -167,7 +167,7 @@ class Lession(BasicLesson):
 
 class Timetable:
     def __init__(self, data):
-        self.lessions = [Lession(data) for data in data["data"]]
+        self.lessons = [Lesson(data) for data in data["data"]]
         self.date = datetime.fromisoformat(data["meta"]["dates"][0])
         self.start = datetime.fromisoformat(data["meta"]["start_time"])
         self.end = datetime.fromisoformat(data["meta"]["end_time"])
