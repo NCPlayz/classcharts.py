@@ -53,6 +53,13 @@ class StudentClient:
 
         await self.ping()
 
+    async def logout(self):
+        headers = {
+            'Authorization': 'Basic {}'.format(self._session_id)
+        }
+        await self._request("POST", "apiv2student/logout", headers=headers)
+        await self.session.close()
+
     async def ping(self):
         form = {
             'include_data': "true"
@@ -73,7 +80,6 @@ class StudentClient:
         self.account_disabled = user.pop('is_disabled')
         self.announcements_count = user.pop('announcements_count')
         self.features = user
-
 
     async def activity(self, *, after: datetime = None, before: datetime = None):
         if after is None:
