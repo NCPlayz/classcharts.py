@@ -119,7 +119,7 @@ class Teacher:
         return '<Teacher name={!r}>'.format(self.name)
 
 
-class Lesson:
+class BasicLesson:
     def __init__(self, data):
         self.name = data["name"]
         try:
@@ -128,7 +128,7 @@ class Lesson:
             self.subject = None
 
     def __repr__(self):
-        return '<Lesson name={!r} subject={!r}>'.format(self.name, self.subject)
+        return '<BasicLesson name={!r} subject={!r}>'.format(self.name, self.subject)
 
 
 class Detention:
@@ -139,10 +139,38 @@ class Detention:
         self.date = datetime.fromisoformat(data['date']).replace(minute=time.minute, hour=time.hour)
         self.length = int(data['length'])
         self.location = data['location']
-        self.lesson = Lesson(data['lesson'])
+        self.lesson = BasicLesson(data['lesson'])
         self.teacher = Teacher(data['teacher'])
         self.lesson_pupil_behaviour = data['lesson_pupil_behaviour']['reason']
         self.detention_type = data['detention_type']['name']
 
     def __repr__(self):
         return '<Detention id={!r} attended={!r} date={!r} length={!r} lesson={!r} teacher={!r} detention_type={!r}>'.format(self.id, self.attended, self.date, self.length, self.lesson, self.teacher, self.detention_type)
+
+
+class Lesson(BasicLesson):
+    def __init__(self, data):
+        super().__init__({"name": data["lesson_name"], "subject": {"name": data["subject_name"]}})
+        title, first_name, last_name = data["teacher_name"].split(" ")
+        self.teacher = Teacher({"title": title, "first_name": first_name, "last_name": last_name})
+        self.room = data["room_name"]
+        self.date = datetime.strptime(data["date"], "%Y-%m-%d")
+        self.period = {"name": data["period_name"], "number": data["period_number"]}
+        self.start = datetime.fromisoformat(data["start_time"])
+        self.end = datetime.fromisoformat(data["end_time"])
+        self.note = data["note"] or None
+        self._key = data["key"]
+    
+    def __repr__(self):
+        return '<Lesson name={!r} subject={!r} room={!r}>'.format(self.name, self.subject, self.room)
+
+
+class Timetable:
+    def __init__(self, data):
+        self.lessons = [Lesson(data) for data in data["data"]]
+        self.date = datetime.fromisoformat(data["meta"]["dates"][0])
+        self.start = datetime.fromisoformat(data["meta"]["start_time"])
+        self.end = datetime.fromisoformat(data["meta"]["end_time"])
+
+    def __repr__(self):
+        return "<Timetable date={!r}>".format(self.date)

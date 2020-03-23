@@ -25,7 +25,6 @@ class StudentClient:
         root = 'https://www.classcharts.com/'
 
         async with self.session.request(verb, root + endpoint, params=params, data=data, headers=headers) as response:
-            print(await response.text())
             try:
                 data = await response.json()
             except aiohttp.client_exceptions.ContentTypeError:
@@ -156,3 +155,20 @@ class StudentClient:
             ret.append(Detention(detention))
 
         return ret
+
+    async def timetable(self, day: datetime = None):
+        """Gets the timetable for a single day
+
+        :param day: the day that the timetable will be got for, defaults to the today
+        :type day: datetime.datetime, optional
+        """
+        params = {}
+        if day:
+            params["date"] = day.strftime("%Y-%m-%d")
+
+        headers = {
+            'Authorization': 'Basic {}'.format(self._session_id)
+        }
+
+        data = await self._request('POST', 'apiv2student/timetable/{}'.format(self.id), params=params, headers=headers)
+        return Timetable(data)
