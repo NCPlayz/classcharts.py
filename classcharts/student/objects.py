@@ -174,3 +174,32 @@ class Timetable:
 
     def __repr__(self):
         return "<Timetable date={!r}>".format(self.date)
+
+
+class AttendanceLesson(BasicLesson):
+    def __init__(self, name, data):
+        super().__init__({"name": name, "subject": {"name": None}})
+        self.code = data["code"] or None
+        self.late_minutes = int(data["late_minutes"] or "0")
+        self.status = data["status"]
+
+    def __repr__(self):
+        return '<AttendanceLesson name={!r} code={!r}>'.format(self.name, self.code)
+
+
+class Attendance:
+    def __init__(self, data):
+        self.percentage = int(data["meta"]["percentage"])
+        self.percentage_singe_august = int(data["meta"]["percentage_singe_august"])
+        self.dates = [datetime.fromisoformat(date) for date in data["meta"]["dates"]]
+        self.days = {}
+
+        for date, day in data["data"].items():
+            self.days[datetime.fromisoformat(date)] = [AttendanceLesson(name, lesson) for name, lesson in day.items()]
+
+        self.sessions = data["meta"]["sessions"]
+        self.start = datetime.fromisoformat(data["meta"]["start_date"])
+        self.end = datetime.fromisoformat(data["meta"]["end_date"])
+
+    def __repr__(self):
+        return "<Attendance percentage={!r}>".format(self.percentage)

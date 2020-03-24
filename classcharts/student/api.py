@@ -53,6 +53,13 @@ class StudentClient:
 
         await self.ping()
 
+    async def logout(self):
+        headers = {
+            'Authorization': 'Basic {}'.format(self._session_id)
+        }
+        await self._request("POST", "apiv2student/logout", headers=headers)
+        await self.session.close()
+
     async def ping(self):
         form = {
             'include_data': "true"
@@ -73,7 +80,6 @@ class StudentClient:
         self.account_disabled = user.pop('is_disabled')
         self.announcements_count = user.pop('announcements_count')
         self.features = user
-
 
     async def activity(self, *, after: datetime = None, before: datetime = None):
         if after is None:
@@ -171,4 +177,27 @@ class StudentClient:
         }
 
         data = await self._request('POST', 'apiv2student/timetable/{}'.format(self.id), params=params, headers=headers)
+
         return Timetable(data)
+
+    async def attendance(self, *, after: datetime = None, before: datetime = None):
+        """Gets the attendance for by default the last month
+
+        :param after: when the attendance should start
+        :type after: datetime.datetime, optional
+        :param before: when the attendance should end, defaults to today
+        :type before: datetime.datetime, optional
+        """
+        params = {}
+
+        if after:
+            params["after"] = after.strftime("%Y-%m-%d")
+        if before:
+            params["before"] = before.strftime("%Y-%m-%d")
+
+        headers = {
+            'Authorization': 'Basic {}'.format(self._session_id)
+        }
+
+        data = await self._request('POST', 'apiv2student/attendance/{}'.format(self.id), params=params, headers=headers)
+        return Attendance(data)
