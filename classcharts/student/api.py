@@ -21,8 +21,14 @@ class StudentClient:
         self.account_disabled = False
         self.announcements = 0
 
-    async def _request(self, verb, endpoint, *, params={}, data={}, headers={}):
+    async def _request(self, verb, endpoint, *, params={}, data={}, headers={}, with_credentials=True):
         root = 'https://www.classcharts.com/'
+
+        if not self.session:
+            await self.login()
+        
+        if with_credentials:
+            headers['Authorization'] = 'Basic {}'.format(self._session_id)
 
         async with self.session.request(verb, root + endpoint, params=params, data=data, headers=headers) as response:
             try:
@@ -44,7 +50,7 @@ class StudentClient:
             'recaptcha-token': 'no-token-available'
         })
     
-        await self._request('POST', 'student/login', data=form)
+        await self._request('POST', 'student/login', data=form, with_credentials=False)
 
         for cookie in self.session.cookie_jar:
             if cookie.key == 'student_session_credentials':
@@ -54,20 +60,14 @@ class StudentClient:
         await self.ping()
 
     async def logout(self):
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
-        await self._request("POST", "apiv2student/logout", headers=headers)
+        await self._request("POST", "apiv2student/logout")
         await self.session.close()
 
     async def ping(self):
         form = {
             'include_data': "true"
         }
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
-        data = await self._request('POST', 'apiv2student/ping', data=form, headers=headers)
+        data = await self._request('POST', 'apiv2student/ping', data=form)
 
         self._session_id = data['meta']['session_id']
         user = data['data']['user']
@@ -91,11 +91,8 @@ class StudentClient:
             'from': after.strftime("%Y-%m-%d"),
             'to': before.strftime("%Y-%m-%d")
         }
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
 
-        data = await self._request('POST', 'apiv2student/activity/{}'.format(self.id), params=params, headers=headers)
+        data = await self._request('POST', 'apiv2student/activity/{}'.format(self.id), params=params)
 
         activity = data['data']
 
@@ -122,11 +119,8 @@ class StudentClient:
             'from': after.strftime("%Y-%m-%d"),
             'to': before.strftime("%Y-%m-%d")
         }
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
 
-        data = await self._request('POST', 'apiv2student/homeworks/{}'.format(self.id), params=params, headers=headers)
+        data = await self._request('POST', 'apiv2student/homeworks/{}'.format(self.id), params=params)
 
         homeworks = data['data']
 
@@ -147,12 +141,8 @@ class StudentClient:
             'from': after.strftime("%Y-%m-%d"),
             'to': before.strftime("%Y-%m-%d")
         }
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
 
-        data = await self._request('POST', 'apiv2student/detentions/{}'.format(self.id), params=params, headers=headers)
-
+        data = await self._request('POST', 'apiv2student/detentions/{}'.format(self.id), params=params)
         detentions = data['data']
 
         ret = []
@@ -172,11 +162,7 @@ class StudentClient:
         if day:
             params["date"] = day.strftime("%Y-%m-%d")
 
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
-
-        data = await self._request('POST', 'apiv2student/timetable/{}'.format(self.id), params=params, headers=headers)
+        data = await self._request('POST', 'apiv2student/timetable/{}'.format(self.id), params=params)
 
         return Timetable(data)
 
@@ -195,9 +181,5 @@ class StudentClient:
         if before:
             params["before"] = before.strftime("%Y-%m-%d")
 
-        headers = {
-            'Authorization': 'Basic {}'.format(self._session_id)
-        }
-
-        data = await self._request('POST', 'apiv2student/attendance/{}'.format(self.id), params=params, headers=headers)
+        data = await self._request('POST', 'apiv2student/attendance/{}'.format(self.id), params=params)
         return Attendance(data)
