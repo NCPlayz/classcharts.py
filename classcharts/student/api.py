@@ -13,7 +13,6 @@ class StudentClient:
         self.session = None
 
         self._session_id = ''
-        self._registration_details = {}
 
         self.id = 0
         self.name = ''
@@ -50,12 +49,8 @@ class StudentClient:
             'recaptcha-token': 'no-token-available'
         })
     
-        await self._request('POST', 'student/login', data=form, with_credentials=False)
-
-        for cookie in self.session.cookie_jar:
-            if cookie.key == 'student_session_credentials':
-                self._registration_details = json.loads(unquote(cookie.value))
-                self._session_id = self._registration_details['session_id']
+        login_data = await self._request('POST', 'apiv2student/login', data=form, with_credentials=False)
+        self._session_id = login_data['meta']['session_id']
 
         await self.ping()
 
