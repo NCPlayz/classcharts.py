@@ -107,7 +107,7 @@ class StudentClient:
         if after is None:
             after = datetime.now() - timedelta(days=31)
         if before is None:
-            before = datetime.now()
+            before = datetime.now() + timedelta(days=31)
 
         params = {
             'display_date': display_date.value,
